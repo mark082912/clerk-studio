@@ -138,4 +138,33 @@
   if(note)note.textContent='「匯入備份」會覆蓋所有資料；「合併個人學習／輪訓資料」只加入缺少的輪訓、任務與初始國考課程進度，保留已作答題目與現有任務完成狀態。請勿上傳可識別病人的資料。';
   const footer=document.querySelector('.site-footer');if(footer)footer.textContent=footer.textContent.replace('v1.1','v1.2');
   render();
+
+  // Private one-tap import: the compressed JSON lives only in the link fragment,
+  // which browsers do not send to GitHub Pages or the GitHub repository.
+  async function importPackFromShareLink(){
+    const prefix='#clerkpack=gz1.';
+    const hash=window.location.hash;
+    if(!hash.startsWith(prefix))return;
+    const token=hash.slice(prefix.length);
+    // Clear personal data from the address bar/history before any asynchronous work.
+    try{history.replaceState(null,'',window.location.pathname+window.location.search);}catch(_){}
+    try{
+      if(!/^[A-Za-z0-9_-]{1,18000}$/.test(token))throw new Error('匯入連結內容無效或過長');
+      if(typeof DecompressionStream!=='function')throw new Error('此瀏覽器不支援解壓縮，請改用最新 Safari 開啟');
+      const b64=token.replace(/-/g,'+').replace(/_/g,'/');
+      const binary=atob(b64+'='.repeat((4-b64.length%4)%4));
+      const compressed=Uint8Array.from(binary,c=>c.charCodeAt(0));
+      const stream=new Blob([compressed]).stream().pipeThrough(new DecompressionStream('gzip'));
+      const raw=await new Response(stream).text();
+      if(raw.length>150000)throw new Error('匯入內容超過限制');
+      const data=JSON.parse(raw);
+      if(data.version!==1||!data.clerk||!Array.isArray(data.clerk.rotations)||!Array.isArray(data.clerk.tasks)){
+        throw new Error('匯入檔案不是 Clerk Studio 個人資料包');
+      }
+      await importClerkPack(new File([raw],'clerk-studio-personal.json',{type:'application/json'}));
+    }catch(error){
+      alert('個人資料匯入失敗：'+error.message+'。網站原有資料未被覆蓋。');
+    }
+  }
+  void importPackFromShareLink();
 })();
