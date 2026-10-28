@@ -37,7 +37,7 @@
         <div class="topbar-right"><span id="today-display"></span><button id="backup-top" type="button" class="secondary small" aria-label="備份與還原">⇩ 備份</button><span class="avatar" aria-hidden="true">CS</span></div>
       </header>
       <main id="app" tabindex="-1"></main>
-      <footer class="site-footer">Clerk Studio v1.0 · 學習與個人管理工具，不取代醫療專業判斷或正式病歷系統。</footer>
+      <footer class="site-footer">Clerk Studio v1.1 · 學習與個人管理工具，不取代醫療專業判斷或正式病歷系統。</footer>
     </div>
   </div>
   <nav class="mobile-nav" aria-label="手機主選單">
@@ -47,7 +47,7 @@
     <button data-page="analytics"><b>▥</b><span>分析</span></button>
   </nav>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <dialog id="backup-dialog" class="modal"><form method="dialog"><div class="modal-head"><div><span class="eyebrow">DATA CONTROL</span><h2>資料備份與還原</h2></div><button class="icon-button" value="cancel" aria-label="關閉">✕</button></div><p class="muted">所有答題紀錄與輪訓任務都儲存在目前瀏覽器。請定期匯出 JSON 備份，換手機或清除瀏覽資料前尤其重要。</p><div class="modal-actions"><button type="button" class="primary" id="export-all">↓ 下載完整備份</button><label class="secondary file-label">↑ 匯入備份<input id="import-all" type="file" accept=".json,application/json" hidden></label></div><p class="warning">匯入會覆蓋目前的答題紀錄、輪訓和任務；請先備份現有資料。請勿放入病人姓名、病歷號或其他識別資料。</p></form></dialog>
+  <dialog id="backup-dialog" class="modal"><form method="dialog"><div class="modal-head"><div><span class="eyebrow">DATA CONTROL</span><h2>資料備份與還原</h2></div><button class="icon-button" value="cancel" aria-label="關閉">✕</button></div><p class="muted">所有答題紀錄與輪訓任務都儲存在目前瀏覽器。請定期匯出 JSON 備份，換手機或清除瀏覽資料前尤其重要。</p><div class="modal-actions"><button type="button" class="primary" id="export-all">↓ 下載完整備份</button><label class="secondary file-label">↑ 匯入備份<input id="import-all" type="file" accept=".json,application/json" hidden></label><label class="secondary file-label">＋ 合併輪訓資料<input id="import-clerk" type="file" accept=".json,application/json" hidden></label></div><p class="warning">「匯入備份」會覆蓋所有資料；「合併輪訓資料」只新增尚未存在的輪訓和待辦，保留國考作答紀錄及既有任務。請勿放入病人姓名、病歷號或其他識別資料。</p></form></dialog>
 <script>
 /* 原創教學題，並非國考歷屆試題；可自行在此檔增加題目。answer 使用 0–3。 */
 window.QUESTION_BANK = [
@@ -177,6 +177,32 @@ function exportTasks(){const rows=[['任務','類別','輪科','到期日','優�
 function exportAggregate(){if(!ui.csv)return;download('資料分類彙總.csv',toCSV([['類別','有效筆數','運算方式','結果'],...csvAggregates().map(g=>[g.name,g.count,ui.csvOperation,g.value.toFixed(2)])]),'text/csv;charset=utf-8');}
 function exportBackup(){download('ClerkStudio_備份_'+localDay()+'.json',JSON.stringify({...db,exportedAt:new Date().toISOString()},null,2),'application/json;charset=utf-8');}
 async function importBackup(file){if(!file)return;if(file.size>6e6){toast('備份檔案過大（上限 6 MB）。');return;}try{const v=JSON.parse(await file.text());if(v.version!==1||!v.study||!v.clerk||!Array.isArray(v.study.history)||!Array.isArray(v.study.bookmarks)||!v.study.records||!Array.isArray(v.clerk.tasks)||!Array.isArray(v.clerk.rotations))throw new Error('版本或格式不正確');if(!confirm('確定匯入？這會覆蓋目前的國考、輪訓與任務紀錄。'))return;db={version:1,study:{records:v.study.records,history:v.study.history,bookmarks:v.study.bookmarks},clerk:{tasks:v.clerk.tasks,rotations:v.clerk.rotations}};save();ui.activeQ=null;render();$$('#backup-dialog').close();toast('備份資料已還原。');}catch(e){toast('匯入失敗：'+e.message);}}
+async function importClerkPack(file){
+  if(!file)return;
+  if(file.size>1000000){toast('輪訓匯入檔上限 1 MB。');return;}
+  try{
+    const obj=JSON.parse(await file.text());
+    if(obj.version!==1||!obj.clerk||!Array.isArray(obj.clerk.tasks)||!Array.isArray(obj.clerk.rotations))throw new Error('輪訓檔格式不正確');
+    if(obj.clerk.tasks.length>200||obj.clerk.rotations.length>100)throw new Error('輪訓資料筆數過多');
+    const oldRotations=new Set(db.clerk.rotations.map(x=>[x.name,x.start,x.end].join('|')));
+    const oldTasks=new Set(db.clerk.tasks.map(x=>[x.title,x.due,x.rotation].join('|')));
+    const rotations=[],tasks=[];
+    for(const r of obj.clerk.rotations){
+      if(!r||typeof r.name!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r.start)||!/^\d{4}-\d{2}-\d{2}$/.test(r.end)||r.start>r.end)continue;
+      const item={id:uid(),name:r.name.slice(0,60),start:r.start,end:r.end,place:String(r.place||'').slice(0,80)};
+      const key=[item.name,item.start,item.end].join('|');if(!oldRotations.has(key)){rotations.push(item);oldRotations.add(key);}
+    }
+    for(const t of obj.clerk.tasks){
+      if(!t||typeof t.title!=='string'||!t.title.trim())continue;
+      const due=String(t.due||'');if(due&&!/^\d{4}-\d{2}-\d{2}$/.test(due))continue;
+      const item={id:uid(),title:t.title.trim().slice(0,100),category:CATEGORIES.includes(t.category)?t.category:'其他',due,priority:['low','medium','high'].includes(t.priority)?t.priority:'medium',repeat:['none','daily','weekly'].includes(t.repeat)?t.repeat:'none',rotation:String(t.rotation||'').slice(0,60),note:String(t.note||'').slice(0,300),done:!!t.done,created:localDay()};
+      const key=[item.title,item.due,item.rotation].join('|');if(!oldTasks.has(key)){tasks.push(item);oldTasks.add(key);}
+    }
+    if(!rotations.length&&!tasks.length){toast('沒有新的輪訓或任務可合併。');return;}
+    if(!confirm(`將新增 ${rotations.length} 個輪訓時段、${tasks.length} 個待辦；現有答題紀錄不受影響。確定嗎？`))return;
+    db.clerk.rotations.push(...rotations);db.clerk.tasks.push(...tasks);save();render();$$('#backup-dialog').close();toast(`已合併 ${rotations.length} 個輪訓、${tasks.length} 項任務。`);
+  }catch(e){toast('合併失敗：'+e.message);}
+}
 function clickHandler(e){const nav=e.target.closest('[data-page]');if(nav){navigate(nav.dataset.page);return;}const subj=e.target.closest('[data-subject]');if(subj){ui.subject=subj.dataset.subject;ui.activeQ=null;ui.sessionSeen=[];render();return;}const filter=e.target.closest('[data-task-filter]');if(filter){ui.taskFilter=filter.dataset.taskFilter;render();return;}const answerBtn=e.target.closest('[data-answer]');if(answerBtn){answer(Number(answerBtn.dataset.answer));return;}
   const del=e.target.closest('[data-delete-task]');if(del){const t=db.clerk.tasks.find(x=>x.id===del.dataset.deleteTask);if(t&&confirm(`確定刪除「${t.title}」？`)){db.clerk.tasks=db.clerk.tasks.filter(x=>x.id!==t.id);save();render();}return;}
   const edit=e.target.closest('[data-edit-task]');if(edit){ui.editTask=edit.dataset.editTask;ui.taskForm=true;render();$$('#task-form-section')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
@@ -187,7 +213,7 @@ function clickHandler(e){const nav=e.target.closest('[data-page]');if(nav){navig
   switch(action){case 'go-study':navigate('study');break;case 'go-clerk':navigate('clerk');break;case 'go-analytics':navigate('analytics');break;case 'new-task':ui.page='clerk';ui.taskForm=true;ui.editTask=null;render();$$('#task-form-section')?.scrollIntoView({behavior:'smooth',block:'center'});break;case 'cancel-task':ui.taskForm=false;ui.editTask=null;render();break;case 'new-rotation':ui.rotationForm=true;ui.editRotation=null;render();break;case 'cancel-rotation':ui.rotationForm=false;ui.editRotation=null;render();break;case 'next-question':pickQuestion();render();break;case 'stop-question':ui.activeQ=null;ui.answer=null;render();break;case 'toggle-bookmark':if(ui.activeQ){const i=db.study.bookmarks.indexOf(ui.activeQ);if(i<0)db.study.bookmarks.push(ui.activeQ);else db.study.bookmarks.splice(i,1);save();render();}break;case 'demo-csv':demoCSV();render();break;case 'clear-csv':ui.csv=null;render();break;case 'export-study':exportStudy();break;case 'export-tasks':exportTasks();break;case 'export-ics':exportICS();break;case 'export-aggregate':exportAggregate();break;}
 }
 document.addEventListener('click',clickHandler);
-document.addEventListener('change',async e=>{const t=e.target;if(t.id==='study-mode'){ui.studyMode=t.value;ui.sessionSeen=[];ui.activeQ=null;render();}else if(t.matches('[data-task-toggle]'))toggleTask(t.dataset.taskToggle,t.checked);else if(['csv-date','csv-value','csv-group','csv-status','csv-operation'].includes(t.id)){ui[{ 'csv-date':'csvDate','csv-value':'csvValue','csv-group':'csvGroup','csv-status':'csvStatus','csv-operation':'csvOperation'}[t.id]]=t.value;render();}else if(t.id==='csv-file'){const file=t.files?.[0];if(!file)return;if(file.size>2e6){toast('CSV 最大 2 MB，請先縮小檔案。');return;}try{initCSV(parseCSV(await file.text()));render();toast(`已讀取 ${ui.csv.rows.length} 筆資料。`);}catch(err){toast('CSV 讀取失敗：'+err.message);} }else if(t.id==='import-all')await importBackup(t.files?.[0]);});
+document.addEventListener('change',async e=>{const t=e.target;if(t.id==='study-mode'){ui.studyMode=t.value;ui.sessionSeen=[];ui.activeQ=null;render();}else if(t.matches('[data-task-toggle]'))toggleTask(t.dataset.taskToggle,t.checked);else if(['csv-date','csv-value','csv-group','csv-status','csv-operation'].includes(t.id)){ui[{ 'csv-date':'csvDate','csv-value':'csvValue','csv-group':'csvGroup','csv-status':'csvStatus','csv-operation':'csvOperation'}[t.id]]=t.value;render();}else if(t.id==='csv-file'){const file=t.files?.[0];if(!file)return;if(file.size>2e6){toast('CSV 最大 2 MB，請先縮小檔案。');return;}try{initCSV(parseCSV(await file.text()));render();toast(`已讀取 ${ui.csv.rows.length} 筆資料。`);}catch(err){toast('CSV 讀取失敗：'+err.message);} }else if(t.id==='import-all')await importBackup(t.files?.[0]);else if(t.id==='import-clerk')await importClerkPack(t.files?.[0]);});
 document.addEventListener('submit',e=>{const f=e.target;if(f.id==='task-form'){e.preventDefault();const d=new FormData(f),title=String(d.get('title')||'').trim();if(!title){toast('請輸入任務名稱');return;}const obj={title:title.slice(0,100),due:String(d.get('due')||''),category:String(d.get('category')),priority:String(d.get('priority')),repeat:String(d.get('repeat')),rotation:String(d.get('rotation')||'').trim().slice(0,60),note:String(d.get('note')||'').trim().slice(0,300)};if(ui.editTask){const t=db.clerk.tasks.find(x=>x.id===ui.editTask);if(t)Object.assign(t,obj);save();toast('任務已更新。');}else{makeTask(obj);toast('新任務已建立。');}ui.taskForm=false;ui.editTask=null;render();}else if(f.id==='rotation-form'){e.preventDefault();const d=new FormData(f),obj={name:String(d.get('name')||'').trim().slice(0,60),start:String(d.get('start')||''),end:String(d.get('end')||''),place:String(d.get('place')||'').trim().slice(0,80)};if(!obj.name||!obj.start||!obj.end||obj.start>obj.end){toast('請確認科別名稱與開始／結束日期。');return;}if(ui.editRotation){Object.assign(db.clerk.rotations.find(x=>x.id===ui.editRotation)||{},obj);}else db.clerk.rotations.push({id:uid(),...obj});save();ui.rotationForm=false;ui.editRotation=null;render();toast('輪訓時間已儲存。');}});
 $$('#backup-shortcut').addEventListener('click',()=>$$('#backup-dialog').showModal());
 $$('#backup-top').addEventListener('click',()=>$$('#backup-dialog').showModal());
