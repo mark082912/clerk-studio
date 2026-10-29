@@ -79,7 +79,7 @@ function renderNote(){
   const glossary={subjective:'只記錄有意義的症狀變化、否定症狀需實際問過。',objective:'VS、PE、檢驗／影像，日期與數值必須核對。',assessment:'Problem list、可能性、改善或惡化的依據。',plan:'診斷／治療／監測／衛教；不得自動臆測藥物劑量。',pain:'量表、疼痛部位、性質、嚴重度。',treatmentResponse:'疼痛藥物療效、是否需要額外止痛；無資料保持待確認。'};
   const input=keys.map(k=>field(k,k.toUpperCase().replace('TREATMENTRESPONSE','Analgesic response / extra analgesics'),glossary[k]||'只填可由病歷、直接訪談或實際檢查核對的事實',k==='hpi'||k==='course'?4:2)).join('');
   const noteParts=noteSections();
-  const warning=note.required.filter(k=>!val(state.field,k));
+  const warning=n.required.filter(k=>!val(state.field,k));
   state.notesPreview=noteParts;
   return `<section class="card"><div class="card-head"><div><h2>📝 病歷格式工作台</h2><p>書面病歷：${enc(language)}；全人照護：中文；精神科：中文。只產生可核對的草稿模板。</p></div></div>
     <div class="clinic-pair"><div class="clinic-field"><label>病歷類型</label><select class="clinic-select" id="clinic-note-type">${select}</select></div>
