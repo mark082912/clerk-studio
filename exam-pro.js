@@ -26,7 +26,7 @@
    @media(max-width:620px){.mock-answer{font-size:15px}.mock-bubble{min-width:29px}}
   `;
   document.head.append(tag);
-  const examRank = {'115年第二次':1,'115年第一次':2,'114年第二次':3};
+  const examRank = {'115年第二次':1,'115年第一次':2,'114年第二次':3,'114年第一次':4};
   const SOURCE = '考選部・醫師（二）・醫學（四）';
   const STORE = 'clerkstudio-mock-v2';
   function ensureHistory() {if(!Array.isArray(db.study.mockHistory))db.study.mockHistory=[];}
@@ -41,7 +41,7 @@
     const prev=h[h.length-1];
     return `<section class="examplus-banner" aria-label="正式國考考點與模擬考">
       <h3>🔥 近年醫師國考・小兒科優先</h3>
-      <p>已對照考選部 115-2、115-1、114-2「醫學(四)」原卷及官方公布（含更正）答案；本站以<b>同考點重新命題</b>，不是原文重製題庫。</p><p class="mock-small">官方原卷：<a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115070&y=2026">115-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115020&y=2026">115-1 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114070&y=2025">114-2 考選部</a></p>
+      <p>已對照考選部 115-2、115-1、114-2、114-1「醫學(四)」原卷及官方公布（含更正）答案；本站以<b>同考點重新命題</b>，不是原文重製題庫。</p><p class="mock-small">官方原卷：<a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115070&y=2026">115-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115020&y=2026">115-1 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114070&y=2025">114-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114020&y=2025">114-1 考選部</a></p>
       <div class="examplus-flex">
          <span class="badge green">官方考點改寫 ${candidatesCount} 題</span>
          <span class="badge blue">更正/送分原題未納入改寫題</span>
