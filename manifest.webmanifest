@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Clerk Studio｜醫師國考與臨床學習",
+  "short_name": "Clerk Studio",
+  "description": "近年醫師二階兒科國考考點、限時模擬考、輪訓待辦與學習統計",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#0d1c32",
+  "icons": [
+    {
+      "src": "./app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
