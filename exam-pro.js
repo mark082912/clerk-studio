@@ -105,7 +105,7 @@
       <div class="divider"></div><h3>逐題檢討</h3>
       ${rows.map(({q,selected,correct},i)=>`<div class="mock-review-item ${correct?'correct':'wrong'}"><div class="mock-meta">${i+1}. ${E(q.sourceExam)}／原題 #${q.officialQNo} · ${E(q.topic)}　${correct?'✅ 正確':'❌ 錯誤'}</div>
         <b>${E(q.question)}</b><p class="mock-small">你的選項：${Number.isInteger(selected)?'ABCD'[selected]+'・'+E(q.options[selected]):'未作答'}<br>正解：${'ABCD'[q.answer]}・${E(q.options[q.answer])}</p>
-        <p>${E(q.explain)}</p><a target="_blank" rel="noopener noreferrer" href="${E(q.source)}">考選部官方題本（第 ${q.officialQNo} 題）↗</a> · <a target="_blank" rel="noopener noreferrer" href="${E(q.answerSource)}">官方更正後標準答案 ↗</a></div>`).join('')}
+        <p>${E(q.explain)}</p>${q.learningLevels?`<div class="small-flag"><b>🌟 重要考點</b>${q.learningLevels.map(t=>`<p style="margin:7px 0">${E(t)}</p>`).join('')}</div>`:''}<a target="_blank" rel="noopener noreferrer" href="${E(q.source)}">考選部官方題本（第 ${q.officialQNo} 題）↗</a> · <a target="_blank" rel="noopener noreferrer" href="${E(q.answerSource)}">官方更正後標準答案 ↗</a></div>`).join('')}
     </section>`;
   }
   const originalStudy=renderStudy;
