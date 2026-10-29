@@ -45,9 +45,10 @@ function field(key,label,hint='',rows=2,obj=state.field){return `<div class="cli
 function noteSections(){
   const note=kit.noteTypes[state.note],english=!(state.department==='PSY'||note.lang==='中文');
   const p=(k,label)=>val(state.field,k)|| (english?missing(label):`【待核實：${label}】`);
-  const out=note.sections.map(([heading,label,key])=>({heading:english?heading:label,text:p(key,label)}));
+  const zh={S:'主觀症狀 S',O:'客觀資料 O',A:'評估 A',P:'計畫 P','Chief Complaint':'主訴','Informant / Reliability':'資料來源與可靠性','History of Present Illness':'現病史','Past Medical / Surgical History':'過去病史與手術史','Medication / Allergy / Family / Social History':'藥物／過敏／家族及社會史','Review of Systems':'系統回顧','Physical Examination':'身體檢查','Laboratory / Imaging':'檢查與影像','Impression / Problem List':'臨床判斷與問題清單','Management Plan':'處置計畫','Reason for Admission':'入院原因','Clinical Course This Week':'本週病程','Important Investigations':'重要檢查','Current Problems / Assessment':'目前問題與評估','Plan for Coming Week':'下週計畫','Patient Summary':'病人摘要','Current Condition':'目前狀況','Active Problems':'主要問題','Pending Studies / Tasks':'待追蹤項目','Contingency / Escalation':'惡化時通報與處置','Admission Diagnosis':'入院診斷','Discharge Diagnosis':'出院診斷','Hospital Course':'住院經過','Condition at Discharge':'出院狀況','Discharge Medication and Follow-up':'出院用藥與追蹤','Pending Results':'待追蹤結果','Reason for Transfer':'轉入／轉出原因','Course Before Transfer':'轉入前病程','Condition upon Acceptance':'接收時病況','Plan / Pending':'治療與待辦計畫'};
+  const out=note.sections.map(([heading,label,key])=>({heading:english?heading:(zh[heading]||label),text:p(key,label)}));
   if(state.note==='SOAP'){
-    const obj=out.find(x=>x.heading===(english?'Objective':'Objective'))||out[1];
+    const obj=out.find(x=>x.heading===(english?'Objective':'客觀資料 O'))||out[1];
     if(obj){obj.text+=`\n${english?'Pain score / site / quality':'疼痛評估'}: ${p('pain','pain score, location, character')}\n${english?'Analgesic response / extra requirement':'藥物反應與是否加用'}: ${p('treatmentResponse','response and rescue analgesics')}`;}
   }else if(['WEEKLY','OFFDUTY'].includes(state.note)&&val(state.field,'pain')){
     out.push({heading:english?'Pain / treatment response':'疼痛與處置反應',text:p('pain','pain')+'\n'+p('treatmentResponse','response')});
