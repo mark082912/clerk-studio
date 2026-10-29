@@ -42,6 +42,7 @@
     return `<section class="card examindex-wrap">
       <div class="card-head"><div><h2>🗂 近年國考考點索引</h2><p>對照官方「醫學（四）」原題題號，點選即練習對應改寫題</p></div>
       <span class="badge green">${done}/${filtered.length} 已練習</span></div>
+      <div class="examplus-flex" style="margin:12px 0">${button("↓ 匯出錯題複習 CSV","examindex-export-wrong","secondary")}<span class="mock-small">匯出只含實際答錯過的改寫題與重點；不傳到雲端。</span></div>
       <div class="examindex-tools">
         <label class="mock-small" for="examindex-year">期別</label>
         <select id="examindex-year">${years.map(y=>`<option value="${y}" ${currentYear===y?'selected':''}>${ageLabel(y)}</option>`).join('')}</select>
@@ -62,6 +63,14 @@
     const available=exams().filter(q=>q.sourceExam===currentYear && (!terms||[q.topic,q.question,String(q.officialQNo)].join(' ').toLowerCase().includes(terms)));
     list.innerHTML=available.length?available.map(item).join(''):'<div class="help">找不到相符考點，請改用其他關鍵字或年份。</div>';
   }
+  function exportWrongBook(){
+    const questions=exams().filter(q=>(db.study.records?.[q.id]?.wrong||0)>0);
+    if(!questions.length){toast('目前沒有正式考點改寫題的答錯紀錄。');return;}
+    const rows=[['考試期別','官方題號','改寫題號','主題','累計錯誤次數','目前連對','題目解析','Level 1','Level 2','Level 3'],
+      ...questions.map(q=>[q.sourceExam,q.officialQNo,q.id,q.topic,db.study.records[q.id].wrong,db.study.records[q.id].streak||0,q.explain,...(q.learningLevels||[]).slice(0,3)])];
+    download('ClerkStudio_兒科錯題複習_'+localDay()+'.csv',toCSV(rows),'text/csv;charset=utf-8');
+    toast('已匯出 '+questions.length+' 題錯題重點。');
+  }
   const before=renderStudy;
   renderStudy=function(){
     const out=before();
@@ -80,6 +89,7 @@
     render();
   });
   document.addEventListener('click',event=>{
+    if(event.target.closest('[data-action="examindex-export-wrong"]')){exportWrongBook();return;}
     const el=event.target.closest('[data-examindex-id]');
     if(!el)return;
     const id=el.dataset.examindexId;
