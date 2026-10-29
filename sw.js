@@ -1,10 +1,11 @@
 /* Clerk Studio offline public-shell cache. No patient or personal data stored in CacheStorage. */
 'use strict';
-const CACHE='clerk-studio-static-v2-1-20261029';
+const CACHE='clerk-studio-static-v2-2-20261030';
 const ASSETS=[
   './','./index.html',
   './pediatric-bank.js?v=14',
   './official-ped-1152.js?v=26',
+  './official-ped-1152-extra.js?v=28',
   './official-ped-1151.js?v=20',
   './official-ped-1142.js?v=20',
   './official-ped-1141.js?v=22',
