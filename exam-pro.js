@@ -159,7 +159,7 @@
     // Weight recent MOEX 115-2 first, then fill from 115-1 and 114-2.
     const recent=qs.filter(q=>q.sourceExam==='115年第二次'),older=qs.filter(q=>q.sourceExam!=='115年第二次');
     const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-    const selected=shuffle(recent).slice(0,count);if(selected.length<count)selected.push(...shuffle(older).slice(0,count-selected.length));
+    const selected=forceLatest?recent.slice().sort((a,b)=>a.officialQNo-b.officialQNo):shuffle(recent).slice(0,count);if(!forceLatest&&selected.length<count)selected.push(...shuffle(older).slice(0,count-selected.length));
     if(!forceLatest)shuffle(selected);
     current={ids:selected.map(q=>q.id),answers:selected.map(()=>null),index:0,expires:Date.now()+count*90*1000,phase:'taking',committed:false};stash();ui.page='study';render();window.scrollTo({top:0});
   }
