@@ -50,7 +50,7 @@
     const due=a.today.length, completed=a.completed, total=due+completed;
     return `<section class="hero"><div><span class="eyebrow">TODAY • CLERK STUDIO</span>
       <h2>今天先做什麼？</h2><p>${E(localDay())} · ${r?`目前輪訓：${E(r.name)}`:'尚未匯入目前輪訓資料'}<br>先處理今天到期項目，再複習國考。</p>
-      <div class="btn-row">${button('開始國考練習 →','go-study','primary mint')}${button('115-2 小兒科國考速測 →','ped-quick','secondary')}${button('新增今日任務','new-task','outline')}${button('匯入我的資料','personal-import','outline')}</div>
+      <div class="btn-row">${button('開始國考練習 →','go-study','primary mint')}${button('115-2 小兒科國考速測 →','ped-quick','secondary')}${button('新增今日任務','new-task','outline')}${button('匯入我的資料','personal-import','outline')}<button type="button" class="secondary small" data-page="clinical">🩺 病歷・查房・值班 →</button></div>
       </div><div class="hero-visual"><b>${due}</b><span>今天尚未完成任務</span></div></section>
       <div class="stats-grid">${statCard('今日任務',total?`${completed}/${total} 項`:'0 項',total?'已完成 / 今日應辦':'尚無今日任務')}
       ${statCard('逾期未完成',`${a.past.length} 項`,a.past.length?'請先檢查是否仍需辦理':'目前無逾期',a.past.length?'warn':'')}
