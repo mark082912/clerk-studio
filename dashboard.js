@@ -1,4 +1,4 @@
-/* Clerk Studio v1.2 - local-only daily dashboard and curriculum checkpoints.
+/* Clerk Studio v1.4 - local-only daily dashboard and curriculum checkpoints.
    Personal calendar and learning progress are NOT bundled with this public source. */
 (() => {
   'use strict';
@@ -50,7 +50,7 @@
     const due=a.today.length, completed=a.completed, total=due+completed;
     return `<section class="hero"><div><span class="eyebrow">TODAY • CLERK STUDIO</span>
       <h2>今天先做什麼？</h2><p>${E(localDay())} · ${r?`目前輪訓：${E(r.name)}`:'尚未匯入目前輪訓資料'}<br>先處理今天到期項目，再複習國考。</p>
-      <div class="btn-row">${button('開始國考練習 →','go-study','primary mint')}${button('新增今日任務','new-task','outline')}${button('匯入我的資料','personal-import','outline')}</div>
+      <div class="btn-row">${button('開始國考練習 →','go-study','primary mint')}${button('小兒科 16 題速測 →','ped-quick','secondary')}${button('新增今日任務','new-task','outline')}${button('匯入我的資料','personal-import','outline')}</div>
       </div><div class="hero-visual"><b>${due}</b><span>今天尚未完成任務</span></div></section>
       <div class="stats-grid">${statCard('今日任務',total?`${completed}/${total} 項`:'0 項',total?'已完成 / 今日應辦':'尚無今日任務')}
       ${statCard('逾期未完成',`${a.past.length} 項`,a.past.length?'請先檢查是否仍需辦理':'目前無逾期',a.past.length?'warn':'')}
@@ -125,6 +125,7 @@
   document.addEventListener('click',e=>{
     const action=e.target.closest('[data-action]')?.dataset.action;
     if(action==='personal-import'){document.querySelector('#backup-dialog')?.showModal();}
+    if(action==='ped-quick'){ui.page='study';ui.subject='小兒科';ui.studyMode='all';ui.sessionSeen=[];pickQuestion();render();window.scrollTo({top:0,behavior:'smooth'});}
     if(action==='edit-plan'){
       const p=plan()||{lastCompleted:'',nextUnit:'',lastUpdated:'',checkpoints:[]};
       const next=prompt('下一個要學的國考單元：',p.nextUnit||'');if(next===null)return;
@@ -136,7 +137,7 @@
   if(label?.firstChild)label.firstChild.textContent='＋ 合併個人學習／輪訓資料';
   const note=document.querySelector('#backup-dialog .warning');
   if(note)note.textContent='「匯入備份」會覆蓋所有資料；「合併個人學習／輪訓資料」只加入缺少的輪訓、任務與初始國考課程進度，保留已作答題目與現有任務完成狀態。請勿上傳可識別病人的資料。';
-  const footer=document.querySelector('.site-footer');if(footer)footer.textContent=footer.textContent.replace('v1.1','v1.2');
+  const footer=document.querySelector('.site-footer');if(footer)footer.textContent=footer.textContent.replace(/v1\.[12]/,'v1.4');
   render();
 
   // Private one-tap import: the compressed JSON lives only in the link fragment,
