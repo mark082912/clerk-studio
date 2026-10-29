@@ -41,7 +41,7 @@
     const prev=h[h.length-1];
     return `<section class="examplus-banner" aria-label="正式國考考點與模擬考">
       <h3>🔥 近年醫師國考・小兒科優先</h3>
-      <p>已逐題核對考選部 115-2、115-1、114-2「醫學(四)」原卷及標準答案；本站用<b>同考點重新命題</b>，並提供官方原卷和答案連結，不是原文重製題庫。</p>
+      <p>已對照考選部 115-2、115-1、114-2「醫學(四)」原卷及官方公布（含更正）答案；本站以<b>同考點重新命題</b>，不是原文重製題庫。</p><p class="mock-small">官方原卷：<a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115070&y=2026">115-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115020&y=2026">115-1 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114070&y=2025">114-2 考選部</a></p>
       <div class="examplus-flex">
          <span class="badge green">官方考點改寫 ${candidatesCount} 題</span>
          <span class="badge blue">更正/送分原題未納入改寫題</span>
@@ -100,7 +100,7 @@
     const rows=summaryRows(),score=rows.filter(x=>x.correct).length;
     return `<section class="card" style="margin-top:16px"><div class="eyebrow">MOCK EXAM COMPLETE</div><h2>模擬考結果</h2>
       <div class="stats-grid">${statCard('答對題數',score+' / '+rows.length,'作答後統計')}${statCard('得分',pct(score,rows.length)+'%','錯題需再練習')}${statCard('待補強',rows.length-score+' 題','查看解析並複習')}</div>
-      <div class="examplus-flex" style="margin:18px 0">${button('結束並回題庫','mock-finish','primary')}${button('將錯題加入下次複習','mock-mark-wrong','secondary')}</div>
+      <div class="examplus-flex" style="margin:18px 0">${button('結束並回題庫','mock-finish','primary')}${current.markedWrong?'<span class="badge green">✅ 錯題已加入複習</span>':button('將錯題加入下次複習','mock-mark-wrong','secondary')}</div>
       <p class="help">本頁是國考考點改寫題模擬考，與官方測驗題不同。已獨立儲存本回模擬考分數，不會重複計入一般題庫作答率。</p>
       <div class="divider"></div><h3>逐題檢討</h3>
       ${rows.map(({q,selected,correct},i)=>`<div class="mock-review-item ${correct?'correct':'wrong'}"><div class="mock-meta">${i+1}. ${E(q.sourceExam)}／原題 #${q.officialQNo} · ${E(q.topic)}　${correct?'✅ 正確':'❌ 錯誤'}</div>
@@ -174,10 +174,10 @@
       case 'mock-leave':toast('模擬考已暫存，可返回「國考智慧複習」繼續。');navigate('home');break;
       case 'mock-finish':current=null;stash();render();window.scrollTo({top:0});break;
       case 'mock-mark-wrong':
-        if(current){let count=0;for(const x of summaryRows()){
+        if(current&&!current.markedWrong){let count=0;for(const x of summaryRows()){
           if(x.correct)continue;const r=db.study.records[x.q.id]||{right:0,wrong:0,streak:0};
           db.study.records[x.q.id]={...r,wrong:(r.wrong||0)+1,streak:0,due:localDay(),last:localDay()};count++;
-        }save();toast('已將 '+count+' 題加入待複習，不額外計入一般答題次數。');}break;
+        }current.markedWrong=true;stash();save();render();toast('已將 '+count+' 題加入待複習，不額外計入一般答題次數。');}break;
       case 'template-ped':case 'template-daily':addTemplate(action);break;
     }
   });
