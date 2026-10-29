@@ -6,6 +6,11 @@
   <meta name="theme-color" content="#0c1729">
   <meta name="description" content="Clerk Studio：國考複習、輪訓任務管理與資料分析三合一個人工作台。">
   <title>Clerk Studio｜醫學生三合一工作台</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./app-icon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Clerk Studio">
   
   
   <style>
@@ -218,7 +223,8 @@ document.addEventListener('submit',e=>{const f=e.target;if(f.id==='task-form'){e
 $$('#backup-shortcut').addEventListener('click',()=>$$('#backup-dialog').showModal());
 $$('#backup-top').addEventListener('click',()=>$$('#backup-dialog').showModal());
 $$('#export-all').addEventListener('click',exportBackup);
-/* 單檔 GitHub Pages 版：不註冊不存在的 sw.js；不宣稱離線支援 */
+/* PWA shell is publicly cached; personal progress remains local to each browser. */
+window.addEventListener('load',()=>{if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});}});
 render();
 
 </script>
