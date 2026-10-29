@@ -27,6 +27,7 @@
   `;
   document.head.append(tag);
   const examRank = {'115年第二次':1,'115年第一次':2,'114年第二次':3,'114年第一次':4};
+  const latestExam = '115年第二次';
   const SOURCE = '考選部・醫師（二）・醫學（四）';
   const STORE = 'clerkstudio-mock-v2';
   function ensureHistory() {if(!Array.isArray(db.study.mockHistory))db.study.mockHistory=[];}
@@ -48,9 +49,18 @@
          <label class="mock-small" for="mock-count">模擬考題數</label>
          <select id="mock-count"><option value="10">10 題／15 分鐘</option><option value="20" selected>20 題／30 分鐘</option><option value="30">30 題／45 分鐘</option></select>
          ${button('開始限時模擬考 →','mock-start','primary')}
+         ${button('🔥 最新 115-2 考點全卷（30 題）','mock-full1152','secondary')}
       </div>
       ${prev?`<p class="mock-meta" style="margin-top:12px">最近一次：${E(prev.date)}｜${E(prev.score)}/${E(prev.total)} 題（${pct(prev.score,prev.total)}%）　·　已完成 ${h.length} 回模擬考</p>`:''}
+    ${studyPreview()}
     </section>`;
+  }
+  function studyPreview(){
+    const latest=candidates().filter(q=>q.sourceExam===latestExam&&Array.isArray(q.learningLevels));
+    const picks=latest.filter(q=>[4,6,9,10,15,19,20,25,26,27].includes(q.officialQNo));
+    return `<details style="margin-top:16px;border-top:1px solid #cddfdc;padding-top:11px"><summary style="cursor:pointer;font-weight:700">📌 最新 115-2：10 個必背 First Choice / 老師追問</summary>
+      <div class="list" style="margin-top:12px">${picks.map(q=>`<div class="list-row"><div><b>#${q.officialQNo} ${E(q.topic)}</b><p class="small" style="margin:4px 0;color:#435669">${E(q.learningLevels[1])}</p><p class="small" style="margin:4px 0;color:#435669">${E(q.learningLevels[2])}</p></div></div>`).join('')}</div>
+    </details>`;
   }
   function focusQuestion(index){return BANK.find(x=>x.id===current?.ids[index]);}
   function validCurrent(){return !!current&&current.ids.every(id=>BANK.some(q=>q.id===id));}
@@ -142,14 +152,15 @@
     for(const [title,category] of specs){if(existing.has(title))continue;makeTask({title,category,due:'',priority:'medium',repeat:'none',rotation:'PED',note:'待核對正式日期；CePO 下次流程依實際指導醫師'});existing.add(title);count++;}
     toast('新增 '+count+' 項匿名任務；已存在的項目不重複。');render();
   }
-  function mockStart(){
+  function mockStart(forceLatest=false){
     const qs=candidates();if(!qs.length){toast('尚未載入官方考點題庫，請重新整理網站。');return;}
-    const count=Math.min(qs.length,Number(document.querySelector('#mock-count')?.value)||20);
+    const latestCount=qs.filter(q=>q.sourceExam===latestExam).length;
+    const count=forceLatest?latestCount:Math.min(qs.length,Number(document.querySelector('#mock-count')?.value)||20);
     // Weight recent MOEX 115-2 first, then fill from 115-1 and 114-2.
     const recent=qs.filter(q=>q.sourceExam==='115年第二次'),older=qs.filter(q=>q.sourceExam!=='115年第二次');
     const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
     const selected=shuffle(recent).slice(0,count);if(selected.length<count)selected.push(...shuffle(older).slice(0,count-selected.length));
-    shuffle(selected);
+    if(!forceLatest)shuffle(selected);
     current={ids:selected.map(q=>q.id),answers:selected.map(()=>null),index:0,expires:Date.now()+count*90*1000,phase:'taking',committed:false};stash();ui.page='study';render();window.scrollTo({top:0});
   }
   document.addEventListener('click',event=>{
@@ -164,7 +175,8 @@
     const action=event.target.closest('[data-action]')?.dataset.action;
     if(!action||!action.startsWith('mock-')&&!action.startsWith('template-'))return;
     switch(action){
-      case 'mock-start':mockStart();break;
+      case 'mock-start':mockStart(false);break;
+      case 'mock-full1152':mockStart(true);break;
       case 'mock-next':if(current){current.index=Math.min(current.index+1,current.ids.length-1);stash();render();}break;
       case 'mock-prev':if(current){current.index=Math.max(0,current.index-1);stash();render();}break;
       case 'mock-submit':
