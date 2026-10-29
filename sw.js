@@ -1,6 +1,6 @@
 /* Clerk Studio offline public-shell cache. No patient or personal data stored in CacheStorage. */
 'use strict';
-const CACHE='clerk-studio-static-v3-0-20261030';
+const CACHE='clerk-studio-static-v3-1-20261030';
 const ASSETS=[
   './','./index.html',
   './pediatric-bank.js?v=14',
@@ -13,7 +13,7 @@ const ASSETS=[
   './exam-pro.js?v=27',
   './exam-index.js?v=32',
   './clinical-data.js?v=1',
-  './clinical-workbench.js?v=1',
+  './clinical-workbench.js?v=2',
   './manifest.webmanifest','./app-icon.svg'
 ];
 self.addEventListener('install',event=>{
