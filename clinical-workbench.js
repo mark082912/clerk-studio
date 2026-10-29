@@ -116,6 +116,11 @@ return ({
  ebm:{name:'EBM',fields:[['background','P (Population/Patient)'],['problem','I (Intervention)'],['course','C (Comparison)'],['current','O (Outcome)'],['plan','Evidence, quality & application']]}
 })[k];
 }
+function reportFullText(){
+ if(state.report!=='minute')return reportParts().map(x=>x.heading+':\n'+x.text).join('\n\n');
+ const p=k=>val(state.reportText,k)||'【待核實】';
+ return p('background')+'。本次主要問題為'+p('problem')+'。重要病程及處置：'+p('course')+'。目前病況與關鍵資料：'+p('current')+'。接下來的計畫：'+p('plan')+'。';
+}
 function reportParts(){
 const spec=reportSpec(),isMinute=state.report==='minute';
 const p=k=>val(state.reportText,k)||(isMinute?'【資料待核對】':'[TO VERIFY]');
@@ -128,7 +133,7 @@ return `<section class="card"><div class="card-head"><div><h2>🎙 報告產生�
 <div class="clinic-field"><label>報告種類</label><select id="clinic-report-type" class="clinic-select">${Object.entries({minute:'One-minute summary（約 60 秒）',case:'Case report',review:'Review / Topic report',ebm:'Evidence-based medicine（PICO）'}).map(([k,n])=>`<option value="${k}" ${state.report===k?'selected':''}>${n}</option>`).join('')}</select></div>
 <div class="clinic-layout"><div>${spec.fields.map(([key,label])=>field(key,label,'請貼經核實的重點，無資料先空白',2,state.reportText)).join('')}</div>
 <div><h3>${enc(spec.name)}｜報告架構</h3><div id="clinic-report-preview">${sectionRows(rows,'report')}</div>
-<div class="btn-row"><button class="primary" type="button" data-clinic-copy="report-all">複製完整報告草稿</button><button type="button" class="secondary" data-clinic-copy="report-prompt">複製 ChatGPT 深度改寫指令</button></div>
+<h3>可直接使用的報告草稿</h3><div class="clinic-pre" id="clinic-report-final">${enc(reportFullText())}</div><div class="btn-row"><button class="primary" type="button" data-clinic-copy="report-all">複製完整報告草稿</button><button type="button" class="secondary" data-clinic-copy="report-prompt">複製 ChatGPT 深度改寫指令</button></div>
 <p class="clinic-muted">此頁不會自行查文獻或推論缺少的病歷；正式引用須逐一核對原文。60 秒口頭報告應主動刪減非關鍵資訊。</p></div></div></section>`;
 }
 function renderRound(){
@@ -178,6 +183,7 @@ const output=(state.mode==='note')?{id:'#clinic-note-preview',rows:noteSections(
 if(!output)return;
 const node=document.querySelector(output.id);if(!node)return;
 node.innerHTML=sectionRows(output.rows,output.kind);
+if(state.mode==='report'){const full=document.querySelector('#clinic-report-final');if(full)full.textContent=reportFullText();}
 if(state.mode==='note'){
 state.notesPreview=output.rows;
 const warn=kit.noteTypes[state.note].required.filter(x=>!val(state.field,x)),el=document.querySelector('#clinic-missing');
@@ -227,7 +233,7 @@ const btn=e.target.closest('[data-clinic-copy]');if(btn){
  const kind=btn.dataset.clinicCopy,idx=Number(btn.dataset.copyIdx||0);
  const sections=kind==='note'?noteSections():kind==='report'?reportParts():kind==='phone'?sbar():[];
  const all=xs=>xs.map(x=>x.heading+':\n'+x.text).join('\n\n');
- const output=kind==='note-all'?fullNote():kind==='report-all'?all(reportParts()):kind==='phone-all'?all(sbar()):kind==='note'||kind==='report'||kind==='phone'?all([sections[idx]]):kind==='requirements'?requirementsText():
+ const output=kind==='note-all'?fullNote():kind==='report-all'?reportFullText():kind==='phone-all'?all(sbar()):kind==='note'||kind==='report'||kind==='phone'?all([sections[idx]]):kind==='requirements'?requirementsText():
  kind==='round-prompt'?roundPrompt():kind==='report-prompt'?reportPrompt():kind==='learn'?`${topics()[Math.min(state.topic,topics().length-1)].name}\n${[topics()[Math.min(state.topic,topics().length-1)].l1,topics()[Math.min(state.topic,topics().length-1)].l2,topics()[Math.min(state.topic,topics().length-1)].clinical,topics()[Math.min(state.topic,topics().length-1)].osce].join('\n')}\n${kit.procedures[state.procedure].steps.join('\n')}`:'';
  if(output)copyText(output);
  return;
