@@ -1,4 +1,4 @@
-# Clerk Studio v3.1｜醫學生國考 × Clerk 2 × 數據分析
+# Clerk Studio v3.2｜醫學生國考 × Clerk 2 × 數據分析
 
 網站：https://mark082912.github.io/clerk-studio/
 
