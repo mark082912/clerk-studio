@@ -29,7 +29,7 @@ style.textContent=`
 .rot-quiz-preview{background:#f9fbfd;border:1px dashed #d3e2e8;padding:11px;border-radius:10px;font-size:13px}
 .rot-warning{background:#fff8e9;border-left:4px solid #dfa44c;padding:10px;color:#765124;border-radius:5px;margin:12px 0;font-size:13px}
 .rot-small-list{font-size:13px;line-height:1.8}
-@media(max-width:820px){.rot-grid{grid-template-columns:1fr}.rot-overflow{overflow:auto;flex-wrap:nowrap}.rot-overflow button{flex:0 0 auto}}
+@media(max-width:820px){.mobile-nav button{min-width:0;flex:1;padding-left:1px;padding-right:1px;font-size:9px}.rot-grid{grid-template-columns:1fr}.rot-overflow{overflow:auto;flex-wrap:nowrap}.rot-overflow button{flex:0 0 auto}}
 `;
 document.head.append(style);
 for(const sel of ['#desktop-nav','.mobile-nav']){
@@ -143,4 +143,5 @@ document.addEventListener('change',e=>{
  const key=e.target.dataset?.rotUnit;if(!key)return;
  done[key]=!!e.target.checked;save();if(ui.page==='rotations')render();
 });
+render();
 })();
