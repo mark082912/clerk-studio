@@ -49,7 +49,7 @@
          <label class="mock-small" for="mock-count">模擬考題數</label>
          <select id="mock-count"><option value="10">10 題／15 分鐘</option><option value="20" selected>20 題／30 分鐘</option><option value="30">30 題／45 分鐘</option></select>
          ${button('開始限時模擬考 →','mock-start','primary')}
-         ${button('🔥 最新 115-2 考點全卷（30 題）','mock-full1152','secondary')}
+         ${candidates().some(q=>q.sourceExam===latestExam)?button('🔥 最新 115-2 考點全卷（'+candidates().filter(q=>q.sourceExam===latestExam).length+' 題）','mock-full1152','secondary'):''}
       </div>
       ${prev?`<p class="mock-meta" style="margin-top:12px">最近一次：${E(prev.date)}｜${E(prev.score)}/${E(prev.total)} 題（${pct(prev.score,prev.total)}%）　·　已完成 ${h.length} 回模擬考</p>`:''}
     ${ui.subject==='小兒科'||ui.subject==='全部'?studyPreview():''}
@@ -155,7 +155,7 @@
   function mockStart(forceLatest=false){
     const qs=candidates();if(!qs.length){toast('尚未載入官方考點題庫，請重新整理網站。');return;}
     const latestCount=qs.filter(q=>q.sourceExam===latestExam).length;
-    const count=forceLatest?Math.max(1,latestCount):Math.min(qs.length,Number(document.querySelector('#mock-count')?.value)||20);
+    if(forceLatest&&!latestCount){toast('本科目前尚無 115-2 考點改寫題，請改做一般模擬考。');return;}const count=forceLatest?latestCount:Math.min(qs.length,Number(document.querySelector('#mock-count')?.value)||20);
     // Weight recent MOEX 115-2 first, then fill from 115-1 and 114-2.
     const recent=qs.filter(q=>q.sourceExam==='115年第二次'),older=qs.filter(q=>q.sourceExam!=='115年第二次');
     const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
