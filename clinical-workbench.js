@@ -72,6 +72,25 @@ function clinicalHTML(){
   <div class="clinic-tabs">${tabs}</div>`;
   return header+({note:renderNote,learn:renderLearn,report:renderReport,round:renderRound,phone:renderPhone,requirements:renderRequirements}[state.mode])();
 }
+function clinicalRubric(){
+ const points=state.note==='SOAP'?[
+  ['S：症狀與變化','當天主訴有焦點，反映治療反應／新併發症，並與 O/A 連貫。'],
+  ['O：時序與數據','生命徵象、檢驗與影像均有正確日期；客觀檢查與鑑別診斷有關。'],
+  ['A：證據導向','有證據的問題清單、DDx 或 improving/stable/worsening 趨勢。'],
+  ['P：對應問題','Diagnostic、Therapeutic、Educational/Disposition plan 與 Assessment 對應，具時程。']
+ ]:state.note==='ADMISSION'?[
+  ['CC / HPI','主訴含症狀與時間；現病史按清楚時間軸、LQQOPERA 選擇重點。'],
+  ['PMH / Meds / Allergy','過去病史、手術、用藥（若已核對含頻率）、過敏；未確認不填 NKA。'],
+  ['Personal / Family / TOCC','依實際問診記錄 relevant history、家族史及感染暴露。'],
+  ['ROS / PE / Vitals','檢查與問診的正向／負向發現實際核實，不一律寫正常。'],
+  ['Labs / Impression / Plan','選擇有意義的日期化檢查、診斷／DDx、適應性處置計畫。']
+ ]:state.note==='WEEKLY'||state.note==='OFFDUTY'?[
+  ['Time-line','只列該段期間有臨床意義的病情變化。'],
+  ['Problem-oriented','每個 active issue 有資料、趨勢、治療反應與待辦。'],
+  ['Pending & escalation','交班的 pending test、consult、procedure 與惡化時通報計畫須核對。']
+ ]:[['Content check','資料與院內格式須核實；病人身份、數值和醫囑不能自創。']];
+ return '<details class="clinic-summary" style="margin:11px 0"><summary>📋 院內病歷評分重點（自我檢查）</summary><ol>'+points.map(x=>'<li><b>'+enc(x[0])+'</b>：'+enc(x[1])+'</li>').join('')+'</ol><p class="clinic-muted">依既有三總 Clerk progress note／admission note 評分講義整理，非自動正式評分。</p></details>';
+}
 function renderNote(){
   const n=kit.noteTypes[state.note],language=(state.department==='PSY'?'中文':n.lang);
   const select=Object.entries(kit.noteTypes).map(([k,v])=>`<option value="${k}" ${k===state.note?'selected':''}>${enc(v.name)}</option>`).join('');
@@ -85,7 +104,7 @@ function renderNote(){
     <div class="clinic-pair"><div class="clinic-field"><label>病歷類型</label><select class="clinic-select" id="clinic-note-type">${select}</select></div>
     <div class="clinic-alert"><b>病人資料安全：</b>請勿在公開 Repo 或網站留下姓名、病歷號、生日。本站此頁輸入不自動保存或上傳，離開／重整將清空。</div></div>
     <div class="clinic-layout"><div><h3>已核對資料輸入（空白不推論）</h3>${input}</div>
-    <div><h3>逐欄可複製病歷</h3><p id="clinic-missing" class="clinic-muted">${warning.length?`尚缺 ${warning.length} 個必填資訊：${enc(warning.join('、'))}`:'必填欄位已輸入；仍需查核臨床內容及格式'}</p>
+    <div><h3>逐欄可複製病歷</h3>${clinicalRubric()}<p id="clinic-missing" class="clinic-muted">${warning.length?`尚缺 ${warning.length} 個必填資訊：${enc(warning.join('、'))}`:'必填欄位已輸入；仍需查核臨床內容及格式'}</p>
       <div id="clinic-note-preview">${sectionRows(noteParts,'note')}</div>
       <div class="btn-row"><button type="button" class="primary" data-clinic-copy="note-all">複製整份草稿</button><button type="button" class="secondary" data-clinic-action="clear-note">清除輸入</button></div>
       <p class="clinic-muted">可貼至 ChatGPT 要求依科別／學長高分格式改寫，但須再次核實未證實數值與醫囑。正式送出前由本人與帶教醫師確認。</p></div></div>
