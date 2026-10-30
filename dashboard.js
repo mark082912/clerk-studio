@@ -117,7 +117,7 @@
       const v=JSON.parse(await file.text());
       if(v.version!==1||!v.study||!v.clerk||!Array.isArray(v.study.history)||!Array.isArray(v.study.bookmarks)||!v.study.records||!Array.isArray(v.clerk.tasks)||!Array.isArray(v.clerk.rotations))throw Error('格式不正確');
       if(!confirm('此操作將覆蓋目前所有國考與輪訓紀錄，確定還原嗎？'))return;
-      db={version:1,study:{records:v.study.records,history:v.study.history,bookmarks:v.study.bookmarks,plan:v.study.plan||null,mockHistory:Array.isArray(v.study.mockHistory)?v.study.mockHistory.slice(-100):[]},clerk:{tasks:v.clerk.tasks,rotations:v.clerk.rotations}};
+      db={version:1,study:{records:v.study.records,history:v.study.history,bookmarks:v.study.bookmarks,plan:v.study.plan||null,mockHistory:Array.isArray(v.study.mockHistory)?v.study.mockHistory.slice(-100):[],rotationUnits:v.study.rotationUnits&&typeof v.study.rotationUnits==='object'&&!Array.isArray(v.study.rotationUnits)?v.study.rotationUnits:{}},clerk:{tasks:v.clerk.tasks,rotations:v.clerk.rotations}};
       save();ui.activeQ=null;render();document.querySelector('#backup-dialog')?.close();toast('備份已完整還原。');
     }catch(e){toast('匯入備份失敗：'+e.message);}
   };
