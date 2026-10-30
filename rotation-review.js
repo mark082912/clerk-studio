@@ -59,7 +59,7 @@ function stats(m){
  const answered=new Set(db.study.history.filter(x=>q.some(z=>z.id===x.id)).map(x=>x.id));
  const wrong=q.filter(x=>(db.study.records[x.id]?.wrong||0)>0&&Number(db.study.records[x.id]?.streak||0)===0);
  const pending=q.filter(x=>isDue(db.study.records[x.id]));
- return {count:q.length,official:origin.length,answered:answered.size,wrong:wrong.length,pending:pending.length};
+ return {count:q.length,official:origin.length,latest:origin.filter(q=>q.sourceExam==='115年第二次').length,answered:answered.size,wrong:wrong.length,pending:pending.length};
 }
 function titleBar(){
  const m=mod(),s=stats(m),d=doneCount(m);
@@ -93,7 +93,7 @@ function quickReview(m){
  const pending=m.units.map((x,i)=>({name:x[0],i,learned:isDone(m,i)})).filter(x=>!x.learned).slice(0,4);
  return `<section class="card"><div class="card-head"><div><h2>⏳ 4 單元精簡複習</h2><p>依尚未完成的單元選取；同科真題優先。</p></div></div>
  <ol class="rot-small-list">${pending.length?pending.map(x=>`<li>${esc(x.name)}</li>`).join(''):'<li>各單元已標完成；建議轉做最近的錯題。</li>'}</ol>
- <div class="rot-links">${button('🔥 115-2 本科考點','rot-latest','primary')}${button('全部本科練習','rot-all','secondary')}
+ <div class="rot-links">${stats(m).latest?button('🔥 115-2 本科考點（'+stats(m).latest+' 題）','rot-latest','primary'):''}${button('全部本科練習','rot-all','secondary')}
  ${button('模擬考（本科）','rot-mock','ghost')}</div>
  <p class="rot-mini">限時模擬考從本科研讀題庫選題，先抽最新官方考點改寫，再用原創題補足；若本科尚無官方題，僅作原創測驗，不冒稱歷屆。</p>
  </section>`;
@@ -111,7 +111,7 @@ function renderRotation(){
  ${units(m).map((x,i)=>unitMarkup(m,x,i)).join('')}</section></div>
  <div>${quickReview(m)}
  <section class="card" style="margin-top:15px"><h2>📊 本科複習統計</h2>
- ${statCard('目前題庫',s.count+' 題','其中官方 115-2 考點改寫 '+s.official)}
+ ${statCard('目前題庫',s.count+' 題','其中 115-2 考點改寫 '+s.latest)}
  ${statCard('實際答過',s.answered+' 題','跨裝置不自動同步')}
  ${statCard('目前錯題',s.wrong+' 題','只依實際作答')}
  <div class="rot-links">${button('今日待複習 →','rot-due','secondary')}${button('所有題目 →','rot-all','ghost')}</div></section>
@@ -131,7 +131,7 @@ document.addEventListener('click',e=>{
  if(!action?.startsWith('rot-')||ui.page!=='rotations')return;
  if(action.startsWith('rot-single-')){const x=action.slice(11).split('-');const code=x[0],i=Number(x[1]);const m=atlas.modules.find(r=>r.code===code);if(m){selected=code;gotoPractice('all','ROT-'+code+'-'+String(i+1).padStart(2,'0'));}return;}
  if(action.startsWith('rot-wrong-')){selected=action.slice(10);gotoPractice('wrong');return}
- if(action==='rot-latest')gotoPractice('official1152');
+ if(action==='rot-latest'){if(stats(mod()).latest){gotoPractice('official1152');}else toast('本科研讀題庫尚無已核對的最新 115-2 官方考點題');}
  if(action==='rot-all')gotoPractice('all');
  if(action==='rot-due')gotoPractice('due');
  if(action==='rot-mock'){
