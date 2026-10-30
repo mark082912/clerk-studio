@@ -34,25 +34,25 @@
   let current = null;
   try{let saved=JSON.parse(sessionStorage.getItem(STORE)||'null');if(saved&&Array.isArray(saved.ids)&&Array.isArray(saved.answers)&&saved.ids.length===saved.answers.length&&saved.ids.length<=40&&saved.ids.length>0)current=saved;}catch(_){}
   function stash(){try{if(current)sessionStorage.setItem(STORE,JSON.stringify(current));else sessionStorage.removeItem(STORE)}catch(_){}}
-  function candidates(){return BANK.filter(q=>q.kind==='official-derived'&&q.subject==='小兒科').slice().sort((a,b)=>(examRank[a.sourceExam]||99)-(examRank[b.sourceExam]||99)||a.officialQNo-b.officialQNo);}
+  function candidates(){const subj=ui.subject==='全部'?'小兒科':ui.subject;return BANK.filter(q=>q.subject===subj&&(q.kind==='official-derived'||q.kind==='rotation-original')).slice().sort((a,b)=>(examRank[a.sourceExam]||99)-(examRank[b.sourceExam]||99)||(a.officialQNo||0)-(b.officialQNo||0));}
   function panel(){
     ensureHistory();
     const candidatesCount=candidates().length;
     const h=db.study.mockHistory;
     const prev=h[h.length-1];
     return `<section class="examplus-banner" aria-label="正式國考考點與模擬考">
-      <h3>🔥 近年醫師國考・小兒科優先</h3>
-      <p>已對照考選部 115-2、115-1、114-2、114-1「醫學(四)」原卷及官方公布（含更正）答案；本站以<b>同考點重新命題</b>，不是原文重製題庫。</p><p class="mock-small">官方原卷：<a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115070&y=2026">115-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115020&y=2026">115-1 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114070&y=2025">114-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114020&y=2025">114-1 考選部</a></p>
+      <h3>🔥 近年醫師國考・${E(ui.subject==='全部'?'小兒科':ui.subject)}優先</h3>
+      <p>優先近年考選部實際考點，原文與改寫題分開；輪訓原創題沒有官方原題。${ui.subject==='小兒科'?'目前涵蓋115／114年醫學(四)。':'其他科別目前先涵蓋 115 年第二次之選定題號與原創臨床重點，尚非各年度完整歷屆題庫。'}</p><p class="mock-small">官方原卷：<a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115070&y=2026">115-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=115020&y=2026">115-1 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114070&y=2025">114-2 考選部</a> · <a target="_blank" rel="noopener noreferrer" href="https://wwwq.moex.gov.tw/exam/wFrmExamQandASearch.aspx?e=114020&y=2025">114-1 考選部</a></p>
       <div class="examplus-flex">
-         <span class="badge green">官方考點改寫 ${candidatesCount} 題</span>
-         <span class="badge blue">更正/送分原題未納入改寫題</span>
+         <span class="badge green">目前可測驗 ${candidatesCount} 題（含原創）</span>
+         <span class="badge blue">優先最新考選部考點；更正／送分原題需核對</span>
          <label class="mock-small" for="mock-count">模擬考題數</label>
          <select id="mock-count"><option value="10">10 題／15 分鐘</option><option value="20" selected>20 題／30 分鐘</option><option value="30">30 題／45 分鐘</option></select>
          ${button('開始限時模擬考 →','mock-start','primary')}
          ${button('🔥 最新 115-2 考點全卷（30 題）','mock-full1152','secondary')}
       </div>
       ${prev?`<p class="mock-meta" style="margin-top:12px">最近一次：${E(prev.date)}｜${E(prev.score)}/${E(prev.total)} 題（${pct(prev.score,prev.total)}%）　·　已完成 ${h.length} 回模擬考</p>`:''}
-    ${studyPreview()}
+    ${ui.subject==='小兒科'||ui.subject==='全部'?studyPreview():''}
     </section>`;
   }
   function studyPreview(){
@@ -74,12 +74,12 @@
     const ms=Math.max(0,current.expires-Date.now());
     const remaining=Math.ceil(ms/1000);
     return `<section class="card" style="margin-top:16px">
-    <div class="mock-top"><div><div class="eyebrow">MOEX CONCEPT EXAM · ${SOURCE}</div><h2>小兒科限時模擬考</h2>
+    <div class="mock-top"><div><div class="eyebrow">MOEX CONCEPT EXAM · ${SOURCE}</div><h2>${E(q.subject)}限時模擬考</h2>
     <span class="mock-meta">第 ${current.index+1} / ${n} 題　·　已答 ${count} / ${n}　·　考點改寫非原文</span></div>
     <div class="mock-clock" data-mock-timer>${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,'0')}</div></div>
     <div class="mock-track"><span style="width:${pct(count,n)}%"></span></div>
     <div class="examplus-flex" style="margin:12px 0 18px">${current.ids.map((id,i)=>`<button type="button" class="mock-bubble ${i===current.index?'current':''} ${Number.isInteger(current.answers[i])?'answered':''}" data-mock-jump="${i}" aria-label="第 ${i+1} 題">${i+1}</button>`).join('')}</div>
-    <div class="mock-meta">${E(q.sourceExam)}・醫學(四)原題第 ${q.officialQNo} 題考點｜${E(q.topic)}</div>
+    <div class="mock-meta">${E(q.kind==='official-derived'?(q.sourceExam+'・'+(q.paper||'醫學(四)')+' 原題第 '+q.officialQNo+' 題考點'):'原創輪訓重點')}｜${E(q.topic)}</div>
     <h3 style="font-size:19px;line-height:1.55;margin:12px 0 18px">${E(q.question)}</h3>
     ${q.options.map((v,i)=>`<button class="mock-answer ${pick===i?'selected':''}" type="button" data-mock-answer="${i}"><span class="letter">${'ABCD'[i]}</span><span>${E(v)}</span></button>`).join('')}
     <div class="examplus-flex" style="margin-top:18px">
@@ -113,9 +113,9 @@
       <div class="examplus-flex" style="margin:18px 0">${button('結束並回題庫','mock-finish','primary')}${current.markedWrong?'<span class="badge green">✅ 錯題已加入複習</span>':button('將錯題加入下次複習','mock-mark-wrong','secondary')}</div>
       <p class="help">本頁是國考考點改寫題模擬考，與官方測驗題不同。已獨立儲存本回模擬考分數，不會重複計入一般題庫作答率。</p>
       <div class="divider"></div><h3>逐題檢討</h3>
-      ${rows.map(({q,selected,correct},i)=>`<div class="mock-review-item ${correct?'correct':'wrong'}"><div class="mock-meta">${i+1}. ${E(q.sourceExam)}／原題 #${q.officialQNo} · ${E(q.topic)}　${correct?'✅ 正確':'❌ 錯誤'}</div>
+      ${rows.map(({q,selected,correct},i)=>`<div class="mock-review-item ${correct?'correct':'wrong'}"><div class="mock-meta">${i+1}. ${E(q.kind==='official-derived'?(q.sourceExam+'／原題 #'+q.officialQNo):'原創輪訓重點')} · ${E(q.topic)}　${correct?'✅ 正確':'❌ 錯誤'}</div>
         <b>${E(q.question)}</b><p class="mock-small">你的選項：${Number.isInteger(selected)?'ABCD'[selected]+'・'+E(q.options[selected]):'未作答'}<br>正解：${'ABCD'[q.answer]}・${E(q.options[q.answer])}</p>
-        <p>${E(q.explain)}</p>${q.learningLevels?`<div class="small-flag"><b>🌟 重要考點</b>${q.learningLevels.map(t=>`<p style="margin:7px 0">${E(t)}</p>`).join('')}</div>`:''}<a target="_blank" rel="noopener noreferrer" href="${E(q.source)}">考選部官方題本（第 ${q.officialQNo} 題）↗</a> · <a target="_blank" rel="noopener noreferrer" href="${E(q.answerSource)}">官方更正後標準答案 ↗</a></div>`).join('')}
+        <p>${E(q.explain)}</p>${q.learningLevels?`<div class="small-flag"><b>🌟 重要考點</b>${q.learningLevels.map(t=>`<p style="margin:7px 0">${E(t)}</p>`).join('')}</div>`:''}${q.source?`<a target="_blank" rel="noopener noreferrer" href="${E(q.source)}">考選部原卷（#${E(q.officialQNo)}）↗</a> · <a target="_blank" rel="noopener noreferrer" href="${E(q.answerSource)}">官方答案 ↗</a>`:'<span class="mock-small">原創教學題（不對應官方題號）</span>'}</div>`).join('')}
     </section>`;
   }
   const originalStudy=renderStudy;
@@ -155,14 +155,15 @@
   function mockStart(forceLatest=false){
     const qs=candidates();if(!qs.length){toast('尚未載入官方考點題庫，請重新整理網站。');return;}
     const latestCount=qs.filter(q=>q.sourceExam===latestExam).length;
-    const count=forceLatest?latestCount:Math.min(qs.length,Number(document.querySelector('#mock-count')?.value)||20);
+    const count=forceLatest?Math.max(1,latestCount):Math.min(qs.length,Number(document.querySelector('#mock-count')?.value)||20);
     // Weight recent MOEX 115-2 first, then fill from 115-1 and 114-2.
     const recent=qs.filter(q=>q.sourceExam==='115年第二次'),older=qs.filter(q=>q.sourceExam!=='115年第二次');
     const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-    const selected=forceLatest?recent.slice().sort((a,b)=>a.officialQNo-b.officialQNo):shuffle(recent).slice(0,count);if(!forceLatest&&selected.length<count)selected.push(...shuffle(older).slice(0,count-selected.length));
+    const selected=forceLatest?(recent.length?recent.slice().sort((a,b)=>(a.officialQNo||0)-(b.officialQNo||0)):qs.slice(0,count)):shuffle(recent).slice(0,count);if(!forceLatest&&selected.length<count)selected.push(...shuffle(older).slice(0,count-selected.length));
     if(!forceLatest)shuffle(selected);
     current={ids:selected.map(q=>q.id),answers:selected.map(()=>null),index:0,expires:Date.now()+count*90*1000,phase:'taking',committed:false};stash();ui.page='study';render();window.scrollTo({top:0});
   }
+  window.startRotationMock=function(subject){ui.subject=subject;ui.page='study';mockStart(false);};
   document.addEventListener('click',event=>{
     const answerButton=event.target.closest('[data-mock-answer]');
     if(answerButton&&current?.phase==='taking'){
