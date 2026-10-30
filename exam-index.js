@@ -75,7 +75,7 @@
   renderStudy=function(){
     const out=before();
     // Never disrupt a timed mock sitting or its answer review.
-    if(out.includes('MOCK EXAM COMPLETE')||out.includes('MOEX CONCEPT EXAM'))return out;
+    if(ui.foundationUnit||out.includes('MOCK EXAM COMPLETE')||out.includes('MOEX CONCEPT EXAM'))return out;
     return out+create();
   };
   document.addEventListener('input',event=>{

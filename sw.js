@@ -1,6 +1,6 @@
 /* Clerk Studio offline public-shell cache. No patient or personal data stored in CacheStorage. */
 'use strict';
-const CACHE='clerk-studio-static-v4-3-20261030';
+const CACHE='clerk-studio-static-v4-4-20261030-release';
 const ASSETS=[
   './','./index.html',
   './pediatric-bank.js?v=14',
@@ -12,12 +12,14 @@ const ASSETS=[
   './rotation-atlas.js?v=43',
   './rotation-exams.js?v=40',
   './rotation-official-1152.js?v=40',
-  './dashboard.js?v=40',
-  './exam-pro.js?v=40',
-  './exam-index.js?v=32',
+  './dashboard.js?v=44',
+  './exam-pro.js?v=44',
+  './exam-index.js?v=44',
   './clinical-data.js?v=2',
   './clinical-workbench.js?v=41',
-  './rotation-review.js?v=41',
+  './rotation-review.js?v=44',
+  './curriculum-data.js?v=44',
+  './curriculum-plan.js?v=44',
   './manifest.webmanifest','./app-icon.svg'
 ];
 self.addEventListener('install',event=>{
@@ -49,3 +51,4 @@ self.addEventListener('fetch',event=>{
     return response;
   })));
 });
+

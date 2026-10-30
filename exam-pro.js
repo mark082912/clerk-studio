@@ -32,12 +32,15 @@
   const STORE = 'clerkstudio-mock-v2';
   function ensureHistory() {if(!Array.isArray(db.study.mockHistory))db.study.mockHistory=[];}
   let current = null;
+  window.hasActiveMock = () => !!current;
   try{let saved=JSON.parse(sessionStorage.getItem(STORE)||'null');if(saved&&Array.isArray(saved.ids)&&Array.isArray(saved.answers)&&saved.ids.length===saved.answers.length&&saved.ids.length<=40&&saved.ids.length>0)current=saved;}catch(_){}
   function stash(){try{if(current)sessionStorage.setItem(STORE,JSON.stringify(current));else sessionStorage.removeItem(STORE)}catch(_){}}
   function candidates(){const subj=ui.subject==='全部'?'小兒科':ui.subject;return BANK.filter(q=>q.subject===subj&&(q.kind==='official-derived'||q.kind==='rotation-original')).slice().sort((a,b)=>(examRank[a.sourceExam]||99)-(examRank[b.sourceExam]||99)||(a.officialQNo||0)-(b.officialQNo||0));}
   function panel(){
+    if(ui.foundationUnit)return '';
     ensureHistory();
     const candidatesCount=candidates().length;
+    if(!candidatesCount)return '<section class="small-flag"><b>目前為一階原創基礎練習</b><p class="help">本科尚未建立可供限時模擬考的官方考點題庫；可從下方選擇既有原創題。</p></section>';
     const h=db.study.mockHistory;
     const prev=h[h.length-1];
     return `<section class="examplus-banner" aria-label="正式國考考點與模擬考">

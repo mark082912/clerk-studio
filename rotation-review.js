@@ -52,6 +52,10 @@ render=function(){
 const esc=v=>E(String(v??''));
 const units=m=>m.units;
 const mod=()=>atlas.modules.find(x=>x.code===selected)||atlas.modules[0];
+window.openRotationModule=function(code){
+ if(!atlas.modules.some(m=>m.code===code))return;
+ selected=code;show='all';ui.page='rotations';render();window.scrollTo({top:0,behavior:'smooth'});
+};
 const isDone=(m,index)=>!!done[m.code+'-'+index];
 const doneCount=m=>m.units.filter((_,i)=>isDone(m,i)).length;
 function stats(m){
@@ -66,6 +70,7 @@ function titleBar(){
  return `<div class="rot-head"><div class="eyebrow">EXAM-FIRST · PERSONAL ROTATION ATLAS</div><h2>你 run 過的科別，一次接成完整複習系統</h2>
  <p>① 國考一階骨架 → ② 二階鑑別 → ③ 臨床實務與 OSCE/EPA → ④ 115-2 正式題目考點改寫 → ⑤ 錯題間隔複習。優先近年真題主題，但本站不是官方題目原文。</p>
  <p>📂 已核對專案庫根目錄、當期課表，以及可讀取的 ENT／TRA 學習文件；部分專案資料夾內文或過去聊天室並未全部提供給此網站，未核實者有明確標記。</p>
+ <div class="rot-links">${button('→ 一階國考複習進度','foundation-open','secondary')}</div>
  <div class="rot-overflow">${[['all','全部'],['completed','已輪訓'],['current','目前'],['upcoming','即將'],['material_only','資料存檔']].map(([v,t])=>`<button type="button" data-rot-filter="${v}" class="${show===v?'active':''}">${t}</button>`).join('')}</div>
  <div class="rot-overflow">${atlas.modules.filter(m=>show==='all'||m.phase===show||(show==='completed'&&m.phase==='source_limited')||(show==='material_only'&&m.phase==='core')).map(x=>`<button type="button" data-rot-select="${x.code}" class="${x.code===selected?'active':''}">${esc(x.code)}</button>`).join('')}</div>
  <div class="rot-grid"><div class="rot-stat"><b>${esc(m.label)}</b>　<span class="badge blue">${phaseMap[m.phase]||'待核實'}</span>
