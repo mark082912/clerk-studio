@@ -208,7 +208,7 @@ async function importClerkPack(file){
     db.clerk.rotations.push(...rotations);db.clerk.tasks.push(...tasks);save();render();$$('#backup-dialog').close();toast(`已合併 ${rotations.length} 個輪訓、${tasks.length} 項任務。`);
   }catch(e){toast('合併失敗：'+e.message);}
 }
-function clickHandler(e){const nav=e.target.closest('[data-page]');if(nav){navigate(nav.dataset.page);return;}const subj=e.target.closest('[data-subject]');if(subj){ui.subject=subj.dataset.subject;if(ui.subject!=='小兒科'&&ui.studyMode.startsWith('official'))ui.studyMode='due';ui.activeQ=null;ui.sessionSeen=[];render();return;}const filter=e.target.closest('[data-task-filter]');if(filter){ui.taskFilter=filter.dataset.taskFilter;render();return;}const answerBtn=e.target.closest('[data-answer]');if(answerBtn){answer(Number(answerBtn.dataset.answer));return;}
+function clickHandler(e){const nav=e.target.closest('[data-page]');if(nav){navigate(nav.dataset.page);return;}const subj=e.target.closest('[data-subject]');if(subj){ui.subject=subj.dataset.subject;ui.activeQ=null;ui.sessionSeen=[];render();return;}const filter=e.target.closest('[data-task-filter]');if(filter){ui.taskFilter=filter.dataset.taskFilter;render();return;}const answerBtn=e.target.closest('[data-answer]');if(answerBtn){answer(Number(answerBtn.dataset.answer));return;}
   const del=e.target.closest('[data-delete-task]');if(del){const t=db.clerk.tasks.find(x=>x.id===del.dataset.deleteTask);if(t&&confirm(`確定刪除「${t.title}」？`)){db.clerk.tasks=db.clerk.tasks.filter(x=>x.id!==t.id);save();render();}return;}
   const edit=e.target.closest('[data-edit-task]');if(edit){ui.editTask=edit.dataset.editTask;ui.taskForm=true;render();$$('#task-form-section')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
   const rd=e.target.closest('[data-delete-rotation]');if(rd){if(confirm('確定刪除這個輪科時段？（任務不受影響）')){db.clerk.rotations=db.clerk.rotations.filter(x=>x.id!==rd.dataset.deleteRotation);save();render();}return;}
@@ -234,10 +234,14 @@ render();
 <script src="official-ped-1151.js?v=20" defer></script>
 <script src="official-ped-1142.js?v=20" defer></script>
 <script src="official-ped-1141.js?v=22" defer></script>
-<script src="dashboard.js?v=30" defer></script>
-<script src="exam-pro.js?v=27" defer></script>
+<script src="rotation-atlas.js?v=40" defer></script>
+<script src="rotation-exams.js?v=40" defer></script>
+<script src="rotation-official-1152.js?v=40" defer></script>
+<script src="dashboard.js?v=40" defer></script>
+<script src="exam-pro.js?v=40" defer></script>
 <script src="exam-index.js?v=32" defer></script>
 <script src="clinical-data.js?v=2" defer></script>
 <script src="clinical-workbench.js?v=3" defer></script>
+<script src="rotation-review.js?v=40" defer></script>
 </body>
 </html>
