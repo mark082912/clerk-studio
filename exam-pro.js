@@ -117,7 +117,7 @@
       <p class="help">本頁是國考考點改寫題模擬考，與官方測驗題不同。已獨立儲存本回模擬考分數，不會重複計入一般題庫作答率。</p>
       <div class="divider"></div><h3>逐題檢討</h3>
       ${rows.map(({q,selected,correct},i)=>`<div class="mock-review-item ${correct?'correct':'wrong'}"><div class="mock-meta">${i+1}. ${E(q.kind==='official-derived'?(q.sourceExam+'／原題 #'+q.officialQNo):'原創輪訓重點')} · ${E(q.topic)}　${correct?'✅ 正確':'❌ 錯誤'}</div>
-        <b>${E(q.question)}</b><p class="mock-small">你的選項：${Number.isInteger(selected)?'ABCD'[selected]+'・'+E(q.options[selected]):'未作答'}<br>正解：${'ABCD'[q.answer]}・${E(q.options[q.answer])}</p>
+        <b>${E(q.question)}</b><ol type="A" class="rationale-list">${q.options.map((opt,j)=>`<li>${j===q.answer?"✅ ":""}${j===selected?"☑ ":""}${E(opt)}${Array.isArray(q.why)&&q.why[j]?" — "+E(q.why[j]):""}</li>`).join("")}</ol><p class="mock-small">你的選項：${Number.isInteger(selected)?'ABCD'[selected]+'・'+E(q.options[selected]):'未作答'}<br>正解：${'ABCD'[q.answer]}・${E(q.options[q.answer])}</p>
         <p>${E(q.explain)}</p>${q.learningLevels?`<div class="small-flag"><b>🌟 重要考點</b>${q.learningLevels.map(t=>`<p style="margin:7px 0">${E(t)}</p>`).join('')}</div>`:''}${q.source?`<a target="_blank" rel="noopener noreferrer" href="${E(q.source)}">考選部原卷（#${E(q.officialQNo)}）↗</a> · <a target="_blank" rel="noopener noreferrer" href="${E(q.answerSource)}">官方答案 ↗</a>`:'<span class="mock-small">原創教學題（不對應官方題號）</span>'}</div>`).join('')}
     </section>`;
   }
