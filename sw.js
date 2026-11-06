@@ -1,6 +1,6 @@
 /* Clerk Studio offline public-shell cache. No patient or personal data stored in CacheStorage. */
 'use strict';
-const CACHE='clerk-studio-static-v4-4-20261030-release';
+const CACHE='clerk-studio-static-v4-4-20261106-review-fix';
 const ASSETS=[
   './','./index.html',
   './pediatric-bank.js?v=14',
@@ -13,7 +13,7 @@ const ASSETS=[
   './rotation-exams.js?v=40',
   './rotation-official-1152.js?v=40',
   './dashboard.js?v=44',
-  './exam-pro.js?v=44',
+  './exam-pro.js?v=45',
   './exam-index.js?v=44',
   './clinical-data.js?v=2',
   './clinical-workbench.js?v=41',
